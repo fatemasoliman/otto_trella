@@ -1,0 +1,35 @@
+{
+    "manifest_version": 3,
+    "name": "Otto - Trella's Load Creation Assistant",
+    "version": "1.0",
+    "description": "Trella's load creation assistant",
+    "permissions": [
+        "identity",
+        "identity.email",
+        "storage",
+        "activeTab"
+    ],
+    "host_permissions": [
+        "https://mail.google.com/",
+        "https://www.googleapis.com/",
+        "https://api.openai.com/"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://ops.trella.app/*"],
+            "js": ["content.js"]
+        }
+    ],
+    "oauth2": {
+        "client_id": "338181681456-c1cfl6l8pqqii3f8oe55c9e704vf3m0q.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/gmail.readonly"
+        ]
+    }
+  }
