@@ -19,7 +19,7 @@
       "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://*.googleapis.com https://api.openai.com;"
     },
     "action": {
-      "default_popup": "popup.html"
+      "default_title": "Open Otto Sidebar"
     },
     "background": {
       "service_worker": "background.js"
@@ -28,6 +28,7 @@
       {
         "matches": ["<all_urls>"],
         "js": ["content.js"],
+        "css": ["sidebar.css"],
         "run_at": "document_idle"
       }
     ],
@@ -39,9 +40,8 @@
     },
     "web_accessible_resources": [
       {
-        "resources": ["popup.html"],
+        "resources": ["sidebar.html"],
         "matches": ["<all_urls>"]
       }
     ]
   }
-  

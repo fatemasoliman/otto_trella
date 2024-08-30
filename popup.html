@@ -9,24 +9,20 @@
 <body>
     <div class="container">
         <div class="left-pane">
-            <button id="authenticate">Sign in with Google</button>
-            <h3>Emails</h3>
-            <div id="email-list-container" class="content">
+            <button id="authenticate" style="display: none;">Sign in with Google</button>
+            <div id="email-list-container">
                 <div id="email-list"></div>
             </div>
+            <div id="text-input-wrapper" style="display: none;">
+                <textarea id="custom-text-input" placeholder="Paste your email here"></textarea>
+            </div>
+            <button id="toggle-text-input" class="text-button">Paste email here</button>
         </div>
         <div class="right-pane">
             <div id="email-content-view" style="display: none;">
                 <h3 id="email-subject"></h3>
                 <p id="email-from"></p>
                 <div id="email-body" class="email-body"></div>
-            </div>
-            <div id="text-input-container">
-                <button id="toggle-text-input">Paste your email here</button>
-                <div id="text-input-wrapper" style="display: none;">
-                    <textarea id="custom-text-input" placeholder="Paste your text here..."></textarea>
-                    <button id="use-custom-text">Use Custom Text</button>
-                </div>
             </div>
             <div id="form-controls">
                 <button id="fill-form-with-otto">Fill form with Otto</button>

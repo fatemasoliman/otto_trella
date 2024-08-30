@@ -11,24 +11,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailBody = document.getElementById('email-body');
     const formFieldsContainer = document.getElementById('form-fields-container');
     const fillFormButton = document.getElementById('fill-form-with-otto');
+
     const toggleTextInputButton = document.getElementById('toggle-text-input');
     const textInputWrapper = document.getElementById('text-input-wrapper');
     const customTextInput = document.getElementById('custom-text-input');
-    const useCustomTextButton = document.getElementById('use-custom-text');
+    const emailListContainer = document.getElementById('email-list-container');
 
     toggleTextInputButton.addEventListener('click', function() {
-        textInputWrapper.style.display = textInputWrapper.style.display === 'none' ? 'block' : 'none';
-    });
-
-    useCustomTextButton.addEventListener('click', function() {
-        const customText = customTextInput.value.trim();
-        if (customText) {
-            fillFormWithGPT(customText);
+        if (textInputWrapper.style.display === 'none') {
+            textInputWrapper.style.display = 'flex';
+            emailListContainer.style.display = 'none';
+            this.textContent = 'Show emails';
         } else {
-            alert('Please enter some text before using it.');
+            textInputWrapper.style.display = 'none';
+            emailListContainer.style.display = 'block';
+            this.textContent = 'Paste email here';
         }
     });
-
+    
     function showAuthButton() {
         authenticateButton.style.display = 'block';
         emailList.innerHTML = '<p>Please sign in to view your emails.</p>';
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         authenticateButton.style.display = 'none';
     }
 
-  fillFormButton.addEventListener('click', function() {
+    fillFormButton.addEventListener('click', function() {
         const selectedEmail = document.querySelector('.email-item.selected');
         if (selectedEmail) {
             const emailBody = selectedEmail.getAttribute('data-body');
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fillFormWithGPT(customTextInput.value.trim());
         } else {
             console.log('No email selected and no custom text entered');
-            alert('Please select an email or enter custom text first.');
+            alert('Please select an email or paste an email in the text area first.');
         }
     });
 
