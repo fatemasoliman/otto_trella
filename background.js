@@ -2,6 +2,8 @@ chrome.runtime.onInstalled.addListener(() => {
   console.log('Extension installed');
 });
 
+
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Received message in background script:', request);
   if (request.action === 'authenticate') {

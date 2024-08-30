@@ -36,5 +36,12 @@
       "scopes": [
         "https://www.googleapis.com/auth/gmail.readonly"
       ]
-    }
+    },
+    "web_accessible_resources": [
+      {
+        "resources": ["popup.html"],
+        "matches": ["<all_urls>"]
+      }
+    ]
   }
+  

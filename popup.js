@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return atob(payload.body.data.replace(/-/g, '+').replace(/_/g, '/')).replace(/\n/g, '<br>');
         }
         return '';
-    }
+    }§
 
     function addEmailToList(id, subject, from, body) {
         console.log(`Adding email to list: ${subject}`);
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emailContentView.style.display = 'block';
         //emailList.style.display = 'none';
     }
-    
+
     authenticateButton.addEventListener('click', function() {
         console.log('Authenticate button clicked');
         chrome.runtime.sendMessage({action: 'authenticate'}, function(response) {
