@@ -13,7 +13,10 @@
         "https://mail.google.com/",
         "https://www.googleapis.com/",
         "https://api.openai.com/"
-    ],
+      ],
+      "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://*.googleapis.com https://api.openai.com;"
+      },
     "action": {
         "default_popup": "popup.html"
     },
@@ -22,7 +25,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://ops.trella.app/*"],
+            "matches": ["<all_urls>"],
             "js": ["content.js"]
         }
     ],
@@ -32,4 +35,4 @@
             "https://www.googleapis.com/auth/gmail.readonly"
         ]
     }
-  }
+}

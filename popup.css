@@ -1,0 +1,60 @@
+body {
+    width: 800px;
+    height: 600px;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100%;
+}
+
+.left-pane {
+    width: 30%;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.right-pane {
+    width: 70%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+#email-list-container {
+    height: calc(100% - 40px);
+    overflow-y: auto;
+}
+
+.email-item {
+    cursor: pointer;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+}
+
+.email-item.selected {
+    background-color: #e0e0e0;
+}
+
+#email-details {
+    margin-bottom: 10px;
+}
+
+#form-controls {
+    margin-bottom: 10px;
+}
+
+#form-fields-container {
+    overflow-y: auto;
+}
+
+button {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}

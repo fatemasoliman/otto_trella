@@ -1,63 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Otto</title>
-  <style>
-    body { width: 600px; font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    .container { display: flex; }
-    .left-pane { width: 250px; border-right: 1px solid #ccc; padding: 10px; }
-    .right-pane { flex-grow: 1; padding: 10px; }
-    #email-list-container { margin-bottom: 20px; }
-    .email-item, .form-field-item { cursor: pointer; padding: 5px; border-bottom: 1px solid #eee; }
-    .email-item:hover, .form-field-item:hover { background-color: #f0f0f0; }
-    .selected { background-color: #e0e0e0; }
-    .collapsible { 
-      background-color: #777;
-      color: white;
-      cursor: pointer;
-      padding: 18px;
-      width: 100%;
-      border: none;
-      text-align: left;
-      outline: none;
-      font-size: 15px;
-    }
-    .active, .collapsible:hover { background-color: #555; }
-    .content {
-      padding: 0 18px;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.2s ease-out;
-      background-color: #f1f1f1;
-    }
-  </style>
+    <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
 <body>
-  <div class="container">
-    <div class="left-pane">
-      <button id="authenticate">Sign in with Google</button>
-
-      <button class="collapsible">Emails</button>
-      <div class="content" id="email-list-container">
-        <div id="email-list"></div>
-      </div>
+    <div class="container">
+        <div class="left-pane">
+            <button id="authenticate">Sign in with Google</button>
+            <h3>Emails</h3>
+            <div id="email-list-container" class="content">
+                <div id="email-list"></div>
+            </div>
+        </div>
+        <div class="right-pane">
+            <div id="snippet-view" style="display: none;">
+                <h3 id="snippet-subject"></h3>
+                <p id="snippet-from"></p>
+                <p id="snippet-content"></p>
+            </div>
+            <div id="form-controls">
+                <button id="scan-form">Scan Form</button>
+                <button id="send-to-gpt">Send to GPT</button>
+                <button id="analyze-with-gpt">Analyze with GPT</button>
+            </div>
+            <div id="form-fields-container">
+                <h2>Form Fields</h2>
+                <div id="form-fields-list"></div>
+            </div>
+        </div>
     </div>
-
-    <div class="right-pane">
-      <div id="snippet-view" style="display: none;">
-        <h3 id="snippet-subject"></h3>
-        <p id="snippet-from"></p>
-        <p id="snippet-content"></p>
-      </div>
-
-      <div id="form-fields-container">
-        <h2>Form Fields</h2>
-        <div id="form-fields-list"></div>
-      </div>
-    </div>
-  </div>
-
-  <script src="popup.js"></script>
-  <script src="gpt_service.js" type="module"></script>
+    <script src="popup.js" type = "module"></script>
 </body>
 </html>

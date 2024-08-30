@@ -1,50 +1,132 @@
 import config from './config.js';
 
 const GPTService = {
-    API_KEY: config.openAIKey, 
-    API_URL: 'https://api.openai.com/v1/chat/completions',
+    API_KEY: config.openAIKey,
+    API_URL: 'https://api.openai.com/v1',
+    ASSISTANT_ID: 'asst_auGRoJqaRVySWahymKlPW90Q', 
 
-    getFormCompletion: async function(emailBody, formFields) {
-        const prompt = this.createPrompt(emailBody, formFields);
-        
-        const response = await fetch(this.API_URL, {
+    async createThread() {
+        const response = await fetch(`${this.API_URL}/threads`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.API_KEY}`
-            },
+            headers: this.getHeaders(),
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to create thread: ${response.status}`);
+        }
+        return await response.json();
+    },
+
+    async addMessageToThread(threadId, content) {
+        const response = await fetch(`${this.API_URL}/threads/${threadId}/messages`, {
+            method: 'POST',
+            headers: this.getHeaders(),
             body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    {"role": "system", "content": "You are a helpful assistant that fills out forms based on email content."},
-                    {"role": "user", "content": prompt}
-                ]
+                role: 'user',
+                content: content
             })
         });
-
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Failed to add message: ${response.status}`);
         }
-
-        const data = await response.json();
-        return this.parseGPTResponse(data.choices[0].message.content, formFields);
+        return await response.json();
     },
 
-    createPrompt: function(emailBody, formFields) {
-        const fieldDescriptions = formFields.map(field => 
-            `${field.label} (${field.type})`
-        ).join(', ');
-
-        return `Based on the following email content, please fill out the form fields: ${fieldDescriptions}. 
-                If a field can't be filled based on the email content, leave it blank.
-
-                Email content:
-                ${emailBody}
-
-                Please provide your response in a JSON format where the keys are the field labels and the values are the filled content.`;
+    async runAssistant(threadId) {
+        console.log('Request body:', JSON.stringify({
+            assistant_id: this.ASSISTANT_ID
+        }));
+        try {
+            const response = await fetch(`${this.API_URL}/threads/${threadId}/runs`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({
+                    assistant_id: this.ASSISTANT_ID
+                })
+            });
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error('Full error response:', errorBody);
+                throw new Error(`Failed to run assistant: ${response.status}. Body: ${errorBody}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error in runAssistant:', error);
+            throw error;
+        }
     },
 
-    parseGPTResponse: function(response, formFields) {
+    async checkRunStatus(threadId, runId) {
+        const response = await fetch(`${this.API_URL}/threads/${threadId}/runs/${runId}`, {
+            method: 'GET',
+            headers: this.getHeaders(),
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to check run status: ${response.status}`);
+        }
+        return await response.json();
+    },
+
+    async getMessages(threadId) {
+        const response = await fetch(`${this.API_URL}/threads/${threadId}/messages`, {
+            method: 'GET',
+            headers: this.getHeaders(),
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to get messages: ${response.status}`);
+        }
+        return await response.json();
+    },
+
+    getHeaders() {
+        return {
+            'Authorization': `Bearer ${this.API_KEY}`,
+            'Content-Type': 'application/json',
+            'OpenAI-Beta': 'assistants=v1'
+        };
+    },
+
+    async getFormCompletion(prompt, formFields) {
+        try {
+            console.log('Starting form completion process...');
+            
+            // Step 1: Create a thread
+            const thread = await this.createThread();
+            console.log('Thread created:', thread.id);
+
+            // Step 2: Add a user's message to the thread
+            await this.addMessageToThread(thread.id, prompt);
+            console.log('Message added to thread');
+
+            // Step 3: Run the assistant
+            const run = await this.runAssistant(thread.id);
+            console.log('Assistant run started:', run.id);
+
+            // Step 4: Periodically check the run status
+            let runStatus;
+            do {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                runStatus = await this.checkRunStatus(thread.id, run.id);
+                console.log('Current run status:', runStatus.status);
+            } while (runStatus.status !== 'completed');
+
+            // Step 5: Retrieve the assistant's response
+            const messages = await this.getMessages(thread.id);
+            console.log('Retrieved messages');
+
+            const assistantMessage = messages.data.find(m => m.role === 'assistant');
+            if (!assistantMessage) {
+                throw new Error('No assistant message found');
+            }
+
+            console.log('Assistant response:', assistantMessage.content[0].text.value);
+            return this.parseGPTResponse(assistantMessage.content[0].text.value, formFields);
+        } catch (error) {
+            console.error('Error in getFormCompletion:', error);
+            throw error;
+        }
+    },
+
+    parseGPTResponse(response, formFields) {
         try {
             const parsed = JSON.parse(response);
             return formFields.map(field => ({
@@ -57,3 +139,5 @@ const GPTService = {
         }
     }
 };
+
+export default GPTService;
