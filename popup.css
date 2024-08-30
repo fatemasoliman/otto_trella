@@ -42,8 +42,10 @@ body {
     background-color: #e0e0e0;
 }
 
-#email-details {
-    margin-bottom: 10px;
+#email-content-view {
+    display: none; /* Hide by default */
+    height: calc(100% - 50px);
+    overflow-y: auto;
 }
 
 #form-controls {
@@ -57,4 +59,37 @@ body {
 button {
     margin-right: 5px;
     margin-bottom: 5px;
+}
+
+.email-body {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+#back-to-list {
+    margin-bottom: 10px;
+}
+
+#email-subject {
+    margin-bottom: 5px;
+}
+
+#email-from {
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+/* New styles to ensure proper layout */
+.right-pane {
+    display: flex;
+    flex-direction: column;
+}
+
+#email-content-view {
+    flex-grow: 1;
+}
+
+#form-controls,
+#form-fields-container {
+    flex-shrink: 0;
 }

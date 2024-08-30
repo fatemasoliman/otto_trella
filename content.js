@@ -11,7 +11,7 @@ function autofillForm(formData) {
 
 // Function to get form field names
 function getFormFields() {
-    const fields = document.querySelectorAll('input, textarea, select');
+    const fields = document.querySelectorAll('input:not([type="submit"]):not([type="button"]), textarea, select');
     return Array.from(fields).map(field => field.name).filter(name => name);
 }
 

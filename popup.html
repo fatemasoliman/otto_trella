@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" type="text/css" href="popup.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto - Trella's Load Creation Assistant</title>
+    <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <div class="container">
@@ -13,16 +16,17 @@
             </div>
         </div>
         <div class="right-pane">
-            <div id="snippet-view" style="display: none;">
-                <h3 id="snippet-subject"></h3>
-                <p id="snippet-from"></p>
-                <p id="snippet-content"></p>
+            <div id="email-content-view" style="display: none;">
+                <h3 id="email-subject"></h3>
+                <p id="email-from"></p>
+                <div id="email-body" class="email-body"></div>
             </div>
             <div id="form-controls">
                 <button id="fill-form-with-otto">Fill form with Otto</button>
             </div>
+            <div id="form-fields-container"></div>
         </div>
     </div>
-    <script src="popup.js" type = "module"></script>
+    <script type="module" src="popup.js"></script>
 </body>
 </html>

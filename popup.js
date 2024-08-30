@@ -1,21 +1,17 @@
-console.log('Popup script loaded');
-
 import GPTService from './gpt_service.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM content loaded');
 
     const authenticateButton = document.getElementById('authenticate');
-    console.log('Authenticate button:', authenticateButton);
     const emailList = document.getElementById('email-list');
-    const snippetView = document.getElementById('snippet-view');
-    const snippetSubject = document.getElementById('snippet-subject');
-    const snippetFrom = document.getElementById('snippet-from');
-    const snippetContent = document.getElementById('snippet-content');
-    const formFieldsList = document.getElementById('form-fields-list');
+    const emailContentView = document.getElementById('email-content-view');
+    const emailSubject = document.getElementById('email-subject');
+    const emailFrom = document.getElementById('email-from');
+    const emailBody = document.getElementById('email-body');
     const formFieldsContainer = document.getElementById('form-fields-container');
     const fillFormButton = document.getElementById('fill-form-with-otto');
-
+ 
     function showAuthButton() {
         authenticateButton.style.display = 'block';
         emailList.innerHTML = '<p>Please sign in to view your emails.</p>';
@@ -64,10 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Authorization': 'Bearer ' + token
             }
         })
-        .then(response => {
-            console.log('Received response from Gmail API');
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             console.log('Parsed Gmail API response:', data);
             emailList.innerHTML = '';
@@ -75,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Found ${data.messages.length} emails`);
                 data.messages.forEach(message => {
                     console.log('Fetching details for message:', message.id);
-                    fetchEmailDetails(token, message.id, true);
+                    fetchEmailDetails(token, message.id);
                 });
             } else {
                 console.log('No emails found');
@@ -88,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function fetchEmailDetails(token, messageId, isFirstInThread) {
+    function fetchEmailDetails(token, messageId) {
         console.log(`Fetching details for email ${messageId}`);
         fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`, {
             headers: {
@@ -98,14 +91,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             console.log(`Received details for email ${messageId}:`, data);
-
-            if (isFirstInThread) {
-                const subject = data.payload.headers.find(header => header.name === 'Subject').value;
-                const from = data.payload.headers.find(header => header.name === 'From').value;
-                const snippet = data.snippet || 'No preview available';
-                const body = getEmailBody(data.payload);
-                addEmailToList(messageId, subject, from, snippet, body);
-            }
+            const subject = data.payload.headers.find(header => header.name === 'Subject').value;
+            const from = data.payload.headers.find(header => header.name === 'From').value;
+            const body = getEmailBody(data.payload);
+            addEmailToList(messageId, subject, from, body);
         })
         .catch(error => {
             console.error(`Error fetching email details for ${messageId}:`, error);
@@ -115,17 +104,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function getEmailBody(payload) {
         if (payload.parts) {
             for (let part of payload.parts) {
-                if (part.mimeType === 'text/plain') {
+                if (part.mimeType === 'text/html') {
                     return atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+                } else if (part.mimeType === 'text/plain') {
+                    return atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/')).replace(/\n/g, '<br>');
                 }
             }
         } else if (payload.body.data) {
-            return atob(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+            return atob(payload.body.data.replace(/-/g, '+').replace(/_/g, '/')).replace(/\n/g, '<br>');
         }
         return '';
     }
 
-    function addEmailToList(id, subject, from, snippet, body) {
+    function addEmailToList(id, subject, from, body) {
         console.log(`Adding email to list: ${subject}`);
         const emailItem = document.createElement('div');
         emailItem.className = 'email-item';
@@ -138,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emailItem.addEventListener('click', function() {
             document.querySelectorAll('.email-item').forEach(item => item.classList.remove('selected'));
             this.classList.add('selected');
-            showSnippet(subject, from, snippet);
+            showEmailContent(subject, from, body);
             if (formFieldsContainer) {
                 formFieldsContainer.style.display = 'block';
             }
@@ -148,40 +139,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Email added to list');
     }
 
-    function showSnippet(subject, from, snippet) {
-        snippetSubject.textContent = subject;
-        snippetFrom.textContent = from;
-        snippetContent.textContent = snippet;
-        snippetView.style.display = 'block';
+    function showEmailContent(subject, from, body) {
+        emailSubject.textContent = subject;
+        emailFrom.textContent = from;
+        emailBody.innerHTML = body;
+        emailContentView.style.display = 'block';
+        //emailList.style.display = 'none';
     }
-
-    async function fillFormWithGPT(emailBody) {
-        try {
-            const formFields = await requestFormFields();
-            console.log('Form fields for GPT analysis:', formFields);
-
-            const completedFields = await GPTService.getFormCompletion(emailBody, formFields);
-            console.log('GPT analysis result:', completedFields);
-
-            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, {
-                    action: "autofillForm",
-                    formData: completedFields
-                }, function(response) {
-                    if (chrome.runtime.lastError) {
-                        console.error('Error autofilling form:', chrome.runtime.lastError);
-                    } else {
-                        console.log('Form autofilled:', response);
-                        alert('Form has been autofilled based on the email content.');
-                    }
-                });
-            });
-        } catch (error) {
-            console.error('Error in fillFormWithGPT:', error);
-            alert('An error occurred while processing the email. Please try again.');
-        }
-    }
-
+    
     authenticateButton.addEventListener('click', function() {
         console.log('Authenticate button clicked');
         chrome.runtime.sendMessage({action: 'authenticate'}, function(response) {
@@ -200,46 +165,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        console.log('Popup received message:', request);
-        if (request.action === 'initialFormFields') {
-            console.log('Received initial form fields:', request.data);
-            sendResponse({status: 'Form fields received'});
-        }
-        return true;
-    });
-
     function requestFormFields() {
-        console.log('Requesting form fields from content script');
+        console.log('Requesting form fields from content script via background');
         return new Promise((resolve, reject) => {
-            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, {action: "getFormFields"}, function(response) {
-                    if (chrome.runtime.lastError) {
-                        console.error('Error:', chrome.runtime.lastError);
-                        reject(chrome.runtime.lastError);
-                    } else {
-                        if (response) {
-                            console.log('Received form fields from content script:', response);
-                            resolve(response);
-                        } else {
-                            console.log('No form fields received from content script');
-                            resolve([]);
-                        }
-                    }
-                });
+            chrome.runtime.sendMessage({action: "getFormFields"}, function(response) {
+                if (chrome.runtime.lastError) {
+                    console.error('Error:', chrome.runtime.lastError);
+                    resolve([]);
+                } else {
+                    console.log('Received form fields:', response);
+                    resolve(response || []);
+                }
             });
         });
     }
 
-    function setupFormFieldsListener() {
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            if (request.action === 'formFieldsReady') {
-                console.log('Form fields are ready, requesting them now');
-                requestFormFields();
-            }
-        });
-    }
+    async function fillFormWithGPT(emailBody) {
+        try {
+            const formFields = await requestFormFields();
+            console.log('Form fields for GPT analysis:', formFields);
 
+            if (formFields.length === 0) {
+                console.log('No form fields available. Skipping GPT analysis.');
+                alert('No form fields detected on the current page. Please make sure you are on the correct page with the form.');
+                return;
+            }
+
+            const completedFields = await GPTService.getFormCompletion(emailBody, formFields);
+            console.log('GPT analysis result:', completedFields);
+
+            chrome.runtime.sendMessage({
+                action: "autofillForm",
+                formData: completedFields
+            }, function(response) {
+                if (chrome.runtime.lastError) {
+                    console.error('Error autofilling form:', chrome.runtime.lastError);
+                    alert('An error occurred while autofilling the form. Please try again or fill the form manually.');
+                } else if (response && response.success) {
+                    console.log('Form autofilled:', response);
+                    alert('Form has been autofilled based on the email content.');
+                } else {
+                    console.error('Autofill response not successful:', response);
+                    alert('Unable to autofill the form. Please try again or fill the form manually.');
+                }
+            });
+        } catch (error) {
+            console.error('Error in fillFormWithGPT:', error);
+            alert('An error occurred while processing the email. Please try again or fill the form manually.');
+        }
+    }
     function init() {
         console.log('Initializing popup');
         getAuthToken()
@@ -256,20 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error getting token:', error);
                 if (authenticateButton) authenticateButton.style.display = 'block';
             });
-
-        requestFormFields().catch(error => {
-            console.error('Error requesting form fields:', error);
-        });
     }
 
     init();
-
-    if (document.querySelector('.content')) {
-        document.querySelector('.content').style.maxHeight = '400px';
-    } else {
-        console.error('.content element not found');
-    }
-
-    setupFormFieldsListener();
-    setupEventListeners();
 });
