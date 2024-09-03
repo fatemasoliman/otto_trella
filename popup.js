@@ -296,11 +296,12 @@ function showEmailContent(subject, from, body, timestamp) {
     emailSubject.textContent = subject;
     emailFrom.textContent = `From: ${from}`;
     emailBody.innerHTML = `
-        <p><strong>Date: ${timestamp}</strong></p>
-        <div class="email-body-content">${body}</div>
+        <p style="margin-top: -20px; font-size: 0.8em;">Date: ${timestamp}</p>
+        <div class="email-body-content" style="margin-top: -10px; line-height: 1.2; white-space: pre-wrap; word-wrap: break-word;">${body}</div>
     `;
     emailContentView.style.display = 'block';
 }
+
 
 
 
